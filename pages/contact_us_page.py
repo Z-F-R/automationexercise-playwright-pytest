@@ -38,4 +38,4 @@ class ContactUsPage:
         return True
 
     def click_home(self):
-        self.home_button.click()
+        self.home_button.click(force=True)
