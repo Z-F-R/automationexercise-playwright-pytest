@@ -28,6 +28,7 @@ def test_add_products_in_cart(page: Page):
 
     with allure.step("Hover over second product and click Add to cart"):
         products_page.add_second_product_to_cart()
+        expect(page.locator("#cartModal")).to_be_hidden()
 
     with allure.step("Click View Cart button"):
         home_page.click_cart()

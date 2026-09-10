@@ -7,4 +7,4 @@ allure-report/
 .vscode/
 *.pyc
 *.pyo
-.test_file.txt
+test_file.txt
