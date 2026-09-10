@@ -14,6 +14,21 @@ from typing import Any
 def page(page: Page):
     page.set_viewport_size({"width": 1920, "height": 1080})
     page.set_default_timeout(10000)
+    page.route(
+        "**/*",
+        lambda route: (
+            route.abort()
+            if any(
+                domain in route.request.url
+                for domain in [
+                    "googlesyndication.com",
+                    "doubleclick.net",
+                    "googleadservices.com",
+                ]
+            )
+            else route.continue_()
+        ),
+    )
     return page
 
 
