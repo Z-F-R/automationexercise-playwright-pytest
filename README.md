@@ -30,7 +30,7 @@ automationexercise-playwright-pytest/
 
 ## Test Coverage
 
-The project automates the test cases provided by AutomationExercise, covering functionality such as:
+The project automates the test cases provided by AutomationExercise, covering:
 
 * User registration and account management
 * Login and logout
@@ -43,7 +43,7 @@ The project automates the test cases provided by AutomationExercise, covering fu
 * Checkout
 * Payment
 * Order placement
-* Reviews
+* Product reviews
 * Subscription
 * Other core e-commerce functionality
 
@@ -95,6 +95,12 @@ pytest --browser chromium
 pytest --browser firefox
 ```
 
+Run tests in parallel with a specific browser:
+
+```bash
+pytest -n auto --browser chromium
+```
+
 Run a specific test:
 
 ```bash
@@ -114,29 +120,30 @@ allure open allure-report
 
 Failed tests automatically include a screenshot in the Allure report.
 
+The latest Allure report is also published automatically to GitHub Pages after a successful CI run.
+
 ## Test Configuration
 
 Common pytest configuration is stored in `pytest.ini`.
 
 The project uses:
 
-* automatic Allure result collection
-* automatic cleanup of previous Allure results
-* verbose pytest output
+* Automatic Allure result collection
+* Automatic cleanup of previous Allure results
+* Verbose pytest output
 
 ## CI/CD
 
 GitHub Actions is used to execute the automated test suite.
 
-The CI pipeline will:
+The CI pipeline:
 
-1. Install Python dependencies
-2. Install Playwright
-3. Run tests in parallel
-4. Generate Allure results
-5. Publish the Allure report to GitHub Pages
-
-Slack notifications will provide the test execution result and a link to the published report.
+1. Installs Python dependencies
+2. Installs Playwright and Chromium
+3. Runs tests in parallel
+4. Generates the Allure report
+5. Publishes the report to GitHub Pages
+6. Sends a Slack notification with a link to the published report
 
 ## Browsers
 
@@ -161,6 +168,6 @@ The framework follows:
 * DRY
 * KISS
 * YAGNI
-* reusable pytest fixtures
-* reliable Playwright locators
-* parallel-safe test execution where applicable
+* Reusable pytest fixtures
+* Reliable Playwright locators
+* Parallel-safe test execution where applicable
