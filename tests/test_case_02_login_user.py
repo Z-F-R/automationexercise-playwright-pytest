@@ -6,7 +6,7 @@ from pages.account_information_page import AccountInformationPage
 
 
 @allure.title("Test Case 2: Login User with correct email and password")
-def test_login_user(page: Page, login_user: dict):
+def test_login_user(page: Page, login_user_for_delete: dict):
     home_page = HomePage(page)
     account_information_page = AccountInformationPage(page)
     login_page = LoginPage(page)
@@ -24,7 +24,7 @@ def test_login_user(page: Page, login_user: dict):
         assert login_page.is_login_to_account_visible()
 
     with allure.step("Enter correct email address and password"):
-        login_page.fill_login_form(login_user["email"], login_user["password"])
+        login_page.fill_login_form(login_user_for_delete["email"], login_user_for_delete["password"])
 
     with allure.step("Click login button"):
         login_page.click_login()

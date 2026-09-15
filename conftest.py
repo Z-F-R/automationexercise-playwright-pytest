@@ -1,43 +1,18 @@
 import uuid
-import pytest
-from playwright.sync_api import Page
-from pages.home_page import HomePage
-from pages.signup_page import SignupPage
-from pages.account_information_page import AccountInformationPage
-from pages.login_page import LoginPage
-import allure
-from pytest import Item
 from typing import Any
+import allure
+import pytest
+from playwright.sync_api import Page, expect
+from pages.account_information_page import AccountInformationPage
+from pages.home_page import HomePage
+from pages.login_page import LoginPage
+from pages.signup_page import SignupPage
 
 
-@pytest.fixture
-def page(page: Page):
-    page.set_viewport_size({"width": 1920, "height": 1080})
-    page.set_default_timeout(10000)
-    page.route(
-        "**/*",
-        lambda route: (
-            route.abort()
-            if any(
-                domain in route.request.url
-                for domain in [
-                    "googlesyndication.com",
-                    "doubleclick.net",
-                    "googleadservices.com",
-                ]
-            )
-            else route.continue_()
-        ),
-    )
-    return page
-
-
-@pytest.fixture
-def registered_user(page: Page):
+def _create_user(page: Page):
     home_page = HomePage(page)
     signup_page = SignupPage(page)
     account_information_page = AccountInformationPage(page)
-    login_page = LoginPage(page)
 
     email = f"test_user_{uuid.uuid4().hex[:8]}@example.com"
     password = "TestPassword123!"
@@ -58,6 +33,40 @@ def registered_user(page: Page):
 
     account_information_page.click_continue()
     home_page.click_logout()
+
+    return email, password
+
+
+@pytest.fixture
+def page(page: Page):
+    page.set_viewport_size({"width": 1920, "height": 1080})
+    page.set_default_timeout(10000)
+
+    page.route(
+        "**/*",
+        lambda route: (
+            route.abort()
+            if any(
+                domain in route.request.url
+                for domain in [
+                    "googlesyndication.com",
+                    "doubleclick.net",
+                    "googleadservices.com",
+                ]
+            )
+            else route.continue_()
+        ),
+    )
+
+    return page
+
+
+@pytest.fixture
+def registered_user(page: Page):
+    home_page = HomePage(page)
+    login_page = LoginPage(page)
+
+    email, password = _create_user(page)
 
     yield {
         "email": email,
@@ -76,28 +85,29 @@ def registered_user(page: Page):
 @pytest.fixture
 def login_user(page: Page):
     home_page = HomePage(page)
-    signup_page = SignupPage(page)
-    account_information_page = AccountInformationPage(page)
+    login_page = LoginPage(page)
 
-    email = f"test_user_{uuid.uuid4().hex[:8]}@example.com"
-    password = "TestPassword123!"
+    email, password = _create_user(page)
 
-    home_page.open()
-    home_page.click_signup_login()
+    yield {
+        "email": email,
+        "password": password,
+    }
 
-    signup_page.fill_signup_form("Test User", email)
-    signup_page.click_signup()
-
-    account_information_page.fill_personal_information()
-    account_information_page.select_newsletter()
-    account_information_page.select_special_offers()
-    account_information_page.fill_address_information()
-    account_information_page.click_create_account()
-
-    assert account_information_page.is_account_created_visible()
-
-    account_information_page.click_continue()
     home_page.click_logout()
+    page.goto("https://www.automationexercise.com/login")
+
+    expect(login_page.email_input).to_be_visible()
+    login_page.fill_login_form(email, password)
+    login_page.click_login()
+
+    home_page.click_delete_account()
+    assert home_page.is_account_deleted_visible()
+
+
+@pytest.fixture
+def login_user_for_delete(page: Page):
+    email, password = _create_user(page)
 
     yield {
         "email": email,

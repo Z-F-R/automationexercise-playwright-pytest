@@ -11,7 +11,7 @@ from pages.order_placed_page import OrderPlacedPage
 
 
 @allure.title("Test Case 16: Place Order - Login before Checkout")
-def test_place_order_login_before_checkout(page: Page, login_user):
+def test_place_order_login_before_checkout(page: Page, login_user_for_delete):
     home_page = HomePage(page)
     login_page = LoginPage(page)
     products_page = ProductsPage(page)
@@ -31,7 +31,7 @@ def test_place_order_login_before_checkout(page: Page, login_user):
         home_page.click_signup_login()
 
     with allure.step("Fill email, password and click Login button"):
-        login_page.fill_login_form(login_user["email"], login_user["password"])
+        login_page.fill_login_form(login_user_for_delete["email"], login_user_for_delete["password"])
         login_page.click_login()
 
     with allure.step("Verify Logged in as username"):

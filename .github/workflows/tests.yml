@@ -15,6 +15,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,9 +33,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Install Playwright
-        run: playwright install --with-deps chromium
+        run: playwright install --with-deps ${{ matrix.browser }}
 
       - name: Install Allure CLI
+        if: matrix.browser == 'chromium'
         run: |
           curl -o allure.tgz -OLs https://github.com/allure-framework/allure2/releases/download/2.35.1/allure-2.35.1.tgz
           tar -xzf allure.tgz
@@ -38,12 +44,14 @@ jobs:
           sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
 
       - name: Run tests
-        run: pytest -n auto
+        run: pytest -n 2 --browser ${{ matrix.browser }}
 
       - name: Generate Allure report
+        if: matrix.browser == 'chromium'
         run: allure generate allure-results -o allure-report --clean
 
       - name: Upload Pages artifact
+        if: matrix.browser == 'chromium'
         uses: actions/upload-pages-artifact@v3
         with:
           path: allure-report
@@ -69,5 +77,20 @@ jobs:
             -H "Content-Type: application/json" \
             --data '{
               "text": "✅ Playwright tests passed!\nAllure report: ${{ steps.deployment.outputs.page_url }}"
+            }' \
+            "${{ secrets.SLACK_WEBHOOK_URL }}"
+
+  notify_failure:
+    needs: test
+    if: needs.test.result == 'failure'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Slack
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            --data '{
+              "text": "❌ Playwright tests failed!\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }' \
             "${{ secrets.SLACK_WEBHOOK_URL }}"
