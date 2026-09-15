@@ -58,8 +58,11 @@ jobs:
 
   deploy:
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
 
     environment:
       name: github-pages
@@ -70,19 +73,24 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+  notify_success:
+    needs: deploy
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Notify Slack
-        if: success()
         run: |
           curl -X POST \
             -H "Content-Type: application/json" \
             --data '{
-              "text": "✅ Playwright tests passed!\nAllure report: ${{ steps.deployment.outputs.page_url }}"
+              "text": "✅ Playwright tests passed!\nAllure report: ${{ needs.deploy.outputs.page_url }}"
             }' \
             "${{ secrets.SLACK_WEBHOOK_URL }}"
 
   notify_failure:
     needs: test
-    if: needs.test.result == 'failure'
+    if: ${{ always() && needs.test.result == 'failure' }}
     runs-on: ubuntu-latest
 
     steps:

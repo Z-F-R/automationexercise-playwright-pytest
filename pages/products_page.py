@@ -45,11 +45,15 @@ class ProductsPage:
         return True
 
     def add_first_product_to_cart(self):
-        self.first_product.hover(force=True)
+        expect(self.first_product).to_be_visible()
+        self.first_product.scroll_into_view_if_needed()
+        self.first_product.hover()
         self.first_add_to_cart.click()
 
     def add_second_product_to_cart(self):
-        self.second_product.hover(force=True)
+        expect(self.second_product).to_be_visible()
+        self.second_product.scroll_into_view_if_needed()
+        self.second_product.hover()
         self.second_add_to_cart.click()
 
     def click_continue_shopping(self):
@@ -58,6 +62,8 @@ class ProductsPage:
 
     def add_all_search_results_to_cart(self):
         for product in self.search_results.all():
-            product.hover(force=True)
+            expect(product).to_be_visible()
+            product.scroll_into_view_if_needed()
+            product.hover()
             product.locator("a.add-to-cart").first.click()
             self.continue_shopping_button.click()
